@@ -1,0 +1,36 @@
+services:
+  mc-server:
+    image: "itzg/minecraft-server"
+    container_name: "mc-server"
+    environment:
+      EULA: "TRUE"
+      VERSION: "1.20.2"
+      MEMORY: "6G"
+      MAX_TICK_TIME: "-1"
+      ONLINE_MODE: "false"
+      MAX_WORLD_SIZE: 60000
+      ENABLE_COMMAND_BLOCK: "true"
+      GUI: "false"
+      ENABLE_ROLLING_LOGS: "true"
+      TYPE: "SPIGOT"
+      DEBUG: "false"
+      DIFFICULTY: "normal"
+      MAX_PLAYERS: 3
+      SIMULATION_DISTANCE: 12
+      VIEW_DISTANCE: 12
+      MODE: "survival"
+      TZ: "Asia/Tokyo"
+      RCON_CMDS_STARTUP: |-
+        gamerule playersSleepingPercentage 1
+        setworldspawn -424 68 2257
+    ports:
+      - "19132:19132/udp"
+      - "25565:25565/tcp"
+    volumes:
+      - ./data:/data
+    stdin_open: true
+    tty: true
+    restart: unless-stopped
+
+volumes:
+  data: {}
