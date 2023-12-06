@@ -14,3 +14,9 @@ $ az deployment group create -g <resource-group-name> --template-file ./<this-re
 * Run ```docker-compose up``` on Azure VM. Once you confirm no error on console. Please stop docker-compose with ```Ctrl+C```.
 * Download ```Geyser-Spigot.jar``` and ```floodgate-spigot.jar``` from [GeyserMC Download page](https://geysermc.org/download) and copy&paste jar files to ```plugins``` directory.
 * Run ```docker-compose up -d```.
+
+## Reference
+
+Please check below for paramter details.
+
+* [Minecraft Server on Docker (Java Edition)](https://docker-minecraft-server.readthedocs.io/en/latest/)
