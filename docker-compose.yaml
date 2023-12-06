@@ -22,7 +22,7 @@ services:
       TZ: "Asia/Tokyo"
       RCON_CMDS_STARTUP: |-
         gamerule playersSleepingPercentage 1
-        setworldspawn -424 68 2257
+        setworldspawn <x> <y> <z>
     ports:
       - "19132:19132/udp"
       - "25565:25565/tcp"
