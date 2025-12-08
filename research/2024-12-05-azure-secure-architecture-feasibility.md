@@ -171,6 +171,7 @@ Minecraft Server (Spoke VNet)
 
 **実装コンポーネント**:
 ```bicep
+@description('VMのプライベートIPアドレス')
 param vmPrivateIP string  // VMのプライベートIPアドレス
 
 // Firewall用サブネット
@@ -295,7 +296,7 @@ resource bastionSubnet 'Microsoft.Network/virtualNetworks/subnets@2023-05-01' = 
   }
 }
 
-resource bastionPublicIP 'Microsoft.Network/publicIPAddresses@2023-04-01' = {
+resource bastionPublicIP 'Microsoft.Network/publicIPAddresses@2023-05-01' = {
   name: 'bastion-pip'
   location: location
   sku: {
@@ -350,7 +351,7 @@ Minecraftサーバー自体の設定ファイル（server.properties）で接続
 # server.properties
 network-compression-threshold=256
 max-players=20
-rate-limit=0  # 0は無制限、設定推奨値は3000-6000
+rate-limit=3000  # パケット数/秒、推奨値は3000-6000（0は無制限で非推奨）
 ```
 
 **メリット**:
@@ -388,6 +389,9 @@ iptables -A INPUT -p tcp --syn -j DROP
 #### 7.1 Azure Monitor / Network Watcher
 **実装すべきメトリクス監視**:
 ```bicep
+@description('監視対象のネットワークインターフェース名')
+param networkInterfaceName string
+
 // 既存リソースの参照
 resource networkInterface 'Microsoft.Network/networkInterfaces@2023-05-01' existing = {
   name: networkInterfaceName
