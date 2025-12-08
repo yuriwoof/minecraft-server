@@ -73,7 +73,7 @@ resource virtualNetwork 'Microsoft.Network/virtualNetworks@2023-05-01' = {
 
 **実装方法**:
 ```bicep
-resource publicIPAddress 'Microsoft.Network/publicIPAddresses@2023-04-01' = {
+resource publicIPAddress 'Microsoft.Network/publicIPAddresses@2023-05-01' = {
   name: publicIPAddressName
   location: location
   sku: {
@@ -171,7 +171,18 @@ Minecraft Server (Spoke VNet)
 
 **実装コンポーネント**:
 ```bicep
-resource firewallPublicIP 'Microsoft.Network/publicIPAddresses@2023-04-01' = {
+param vmPrivateIP string  // VMのプライベートIPアドレス
+
+// Firewall用サブネット
+resource firewallSubnet 'Microsoft.Network/virtualNetworks/subnets@2023-05-01' = {
+  parent: virtualNetwork
+  name: 'AzureFirewallSubnet'  // 名前は固定
+  properties: {
+    addressPrefix: '10.1.2.0/26'  // 既存サブネットと重複しない範囲
+  }
+}
+
+resource firewallPublicIP 'Microsoft.Network/publicIPAddresses@2023-05-01' = {
   name: 'minecraft-fw-pip'
   location: location
   sku: {
@@ -216,7 +227,7 @@ resource azureFirewall 'Microsoft.Network/azureFirewalls@2023-05-01' = {
               name: 'minecraft-java'
               protocols: ['TCP']
               sourceAddresses: ['*']
-              destinationAddresses: [firewallPublicIP.properties.ipAddress]
+              destinationAddresses: [reference(firewallPublicIP.id, '2023-05-01').ipAddress]
               destinationPorts: ['25565']
               translatedAddress: vmPrivateIP
               translatedPort: '25565'
@@ -225,7 +236,7 @@ resource azureFirewall 'Microsoft.Network/azureFirewalls@2023-05-01' = {
               name: 'minecraft-bedrock'
               protocols: ['UDP']
               sourceAddresses: ['*']
-              destinationAddresses: [firewallPublicIP.properties.ipAddress]
+              destinationAddresses: [reference(firewallPublicIP.id, '2023-05-01').ipAddress]
               destinationPorts: ['19132']
               translatedAddress: vmPrivateIP
               translatedPort: '19132'
@@ -270,12 +281,17 @@ SSH管理接続をインターネットから隔離し、Azure Bastion経由で�
 
 **実装方法**:
 ```bicep
+// 既存VNetの参照
+resource virtualNetwork 'Microsoft.Network/virtualNetworks@2023-05-01' existing = {
+  name: virtualNetworkName
+}
+
 // Bastion用サブネットの追加
 resource bastionSubnet 'Microsoft.Network/virtualNetworks/subnets@2023-05-01' = {
   parent: virtualNetwork
   name: 'AzureBastionSubnet'  // 名前は固定
   properties: {
-    addressPrefix: '10.1.1.0/26'  // /26以上が必須
+    addressPrefix: '10.1.3.0/26'  // /26以上が必須、既存サブネットと重複しない範囲
   }
 }
 
@@ -372,6 +388,28 @@ iptables -A INPUT -p tcp --syn -j DROP
 #### 7.1 Azure Monitor / Network Watcher
 **実装すべきメトリクス監視**:
 ```bicep
+// 既存リソースの参照
+resource networkInterface 'Microsoft.Network/networkInterfaces@2023-05-01' existing = {
+  name: networkInterfaceName
+}
+
+// アクショングループの作成
+resource actionGroup 'Microsoft.Insights/actionGroups@2023-01-01' = {
+  name: 'minecraft-alerts'
+  location: 'global'
+  properties: {
+    groupShortName: 'MC-Alerts'
+    enabled: true
+    emailReceivers: [
+      {
+        name: 'Admin Email'
+        emailAddress: 'admin@example.com'
+        useCommonAlertSchema: true
+      }
+    ]
+  }
+}
+
 resource metricAlert 'Microsoft.Insights/metricAlerts@2018-03-01' = {
   name: 'high-network-traffic-alert'
   location: 'global'
