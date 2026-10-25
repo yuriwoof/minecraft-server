@@ -1,0 +1,5 @@
+name: minecraft-server
+
+infra:
+  provider: bicep
+  path: infra
