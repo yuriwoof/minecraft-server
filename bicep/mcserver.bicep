@@ -1,3 +1,6 @@
+// Legacy deployment template. The approved AZD/Bicep path is infra/main.bicep.
+// This template uses a different network and storage-key design; do not use it for new deployments.
+
 @description('ShortName is required for a unique storage account name. Only 5 characters.')
 param shortName string
 

@@ -1,36 +1,41 @@
 services:
   mc-server:
-    image: "itzg/minecraft-server"
-    container_name: "mc-server"
+    image: itzg/minecraft-server:java25
+    container_name: mc-server
     environment:
       EULA: "TRUE"
-      VERSION: "1.20.2"
-      MEMORY: "6G"
-      MAX_TICK_TIME: "-1"
-      ONLINE_MODE: "false"
-      MAX_WORLD_SIZE: 60000
-      ENABLE_COMMAND_BLOCK: "true"
-      GUI: "false"
-      ENABLE_ROLLING_LOGS: "true"
-      TYPE: "SPIGOT"
-      DEBUG: "false"
-      DIFFICULTY: "normal"
-      MAX_PLAYERS: 3
-      SIMULATION_DISTANCE: 12
-      VIEW_DISTANCE: 12
-      MODE: "survival"
-      TZ: "Asia/Tokyo"
-      RCON_CMDS_STARTUP: |-
-        gamerule playersSleepingPercentage 1
-        setworldspawn <x> <y> <z>
+      TYPE: PAPER
+      VERSION: "26.3"
+      ONLINE_MODE: "true"
+      ENABLE_WHITELIST: "true"
+      ENFORCE_WHITELIST: "true"
+      WHITELIST: "${MINECRAFT_WHITELIST:?Set MINECRAFT_WHITELIST in .env}"
+      OPS: "${MINECRAFT_OPERATORS:?Set MINECRAFT_OPERATORS in .env}"
+      ENABLE_RCON: "false"
+      ENABLE_COMMAND_BLOCK: "false"
+      MAX_PLAYERS: "10"
+      VIEW_DISTANCE: "8"
+      SIMULATION_DISTANCE: "6"
+      MEMORY: 3G
+      TZ: Asia/Tokyo
     ports:
-      - "19132:19132/udp"
-      - "25565:25565/tcp"
+      - "127.0.0.1:25565:25565/tcp"
     volumes:
       - ./data:/data
+    stop_grace_period: 3m
     stdin_open: true
     tty: true
     restart: unless-stopped
 
-volumes:
-  data: {}
+  plugin-build:
+    image: gradle:9.1.0-jdk25
+    profiles:
+      - tools
+    working_dir: /workspace
+    volumes:
+      - ./plugin:/workspace
+      - ./data/plugins:/output
+    command:
+      - sh
+      - -c
+      - gradle --no-daemon --console=plain build && cp build/libs/paper-starter.jar /output/paper-starter.jar

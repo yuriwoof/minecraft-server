@@ -1,0 +1,6 @@
+/.azure/*
+!/.azure/deployment-plan.md
+/.env
+/data/
+/plugin/.gradle/
+/plugin/build/

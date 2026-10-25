@@ -1,0 +1,9 @@
+name: PaperStarter
+version: 0.1.0
+main: jp.yuriwoof.minecraft.PaperStarterPlugin
+api-version: '26.3'
+description: Minimal Paper plugin development starter.
+commands:
+  paperstarter:
+    description: Confirms the starter plugin is loaded.
+    usage: /paperstarter
